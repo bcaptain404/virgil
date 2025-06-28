@@ -1,0 +1,9 @@
+venv/
+*.log
+whisper.cpp
+assets/virgil.ppn*
+.config
+*.old
+virgil_manifest.txt
+__pycache__
+*.wav
