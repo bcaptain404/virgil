@@ -6,8 +6,9 @@ from config import load_config
 from logger import init_logging, log
 from recorder import record_audio
 from speaker import init_tts
-from transcriber import start_worker, enqueue_transcription
+from transcriber import start_worker, enqueue_transcription, Say
 from hotword import init_hotword, register_callback
+from speaker import speak
 
 def play_sound( sound_file ):
     if os.path.exists(sound_file):
@@ -45,6 +46,7 @@ if __name__ == "__main__":
     init_hotword(config)
 
     log(f"[{time.time()}] 🧠 Virgil Voice Assistant is live. Say the wake word...")
+    Say("Virgil ready.")
 
     try:
         while True:

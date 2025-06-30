@@ -23,6 +23,9 @@ def enqueue_transcription(audio_path):
     _job_queue.put(audio_path)
     log(f"[{time.time()}] 📥 Enqueued audio for transcription: {audio_path}")
 
+def Say( text ):
+    speak(text, _config)
+
 def _worker_loop():
     while True:
         audio_path = _job_queue.get()
@@ -52,7 +55,7 @@ def _worker_loop():
                     transcript = f.read().strip()
                 log(f"[{time.time()}] 📝 Transcription result: {transcript}")
                 if transcript:
-                    speak(f"You said: {transcript}", _config)
+                    Say(f"{transcript}")
             else:
                 log(f"[{time.time()}] 🤷 No transcription file produced.")
 
