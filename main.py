@@ -4,7 +4,7 @@ import argparse
 import subprocess
 from config import load_config
 from logger import init_logging, log
-from recorder import record_audio, check_microphone_activity
+from recorder import record_audio, check_microphone_activity, select_input_device
 from speaker import init_tts
 from transcriber import start_worker, enqueue_transcription, Say
 from hotword import init_hotword, register_callback
@@ -30,7 +30,8 @@ def handle_wake():
     enqueue_transcription(config["audio_input"])
 
 if __name__ == "__main__":
-    play_sound( "assets/virgil_startup.wav" )
+    config_path = "config.json"
+    selected_input = select_input_device(config_path)
 
     parser = argparse.ArgumentParser(description="Virgil Voice Assistant")
     parser.add_argument("-d", "--duration", type=int, help="Recording duration in seconds")
@@ -38,6 +39,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     config = load_config(args)
+
+    play_sound( "assets/virgil_startup.wav" )
 
     init_logging(config)
 
