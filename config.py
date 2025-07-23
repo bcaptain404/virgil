@@ -18,15 +18,21 @@ def load_config(cli_args):
     # Load .env if it exists
     load_dotenv()
 
-    # Load config.json if it exists
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
-    file_config = {}
-    if os.path.exists(config_path):
-        with open(config_path, "r") as f:
-            file_config = json.load(f)
-
     config = CONFIG_DEFAULTS.copy()
-    config.update(file_config)
+
+    # Determine config path
+    config["config_path"] = "config.json"
+    if hasattr(cli_args, "config_path"): # todo: make sure the CLI argument exists to specify an alternate config file)
+        config["config_path"] = args.config_path
+    else:
+        config["config_path"] = os.path.join(os.path.dirname(__file__), config["config_path"])
+
+    # Load config.json if it exists
+    if os.path.exists(config["config_path"]):
+        file_config = {}
+        with open(config["config_path"], "r") as f:
+            file_config = json.load(f)
+        config.update(file_config)
 
     # Environment variable overrides
     config["tts_model"] = os.getenv("TTS_MODEL", config["tts_model"])

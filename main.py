@@ -4,7 +4,7 @@ import argparse
 import subprocess
 from config import load_config
 from logger import init_logging, log
-from recorder import record_audio, check_microphone_activity, select_input_device
+from recorder import record_audio, check_microphone_activity, select_input_device, get_device_index_by_name
 from speaker import init_tts
 from transcriber import start_worker, enqueue_transcription, Say
 from hotword import init_hotword, register_callback
@@ -30,22 +30,26 @@ def handle_wake():
     enqueue_transcription(config["audio_input"])
 
 if __name__ == "__main__":
-    config_path = "config.json"
-    selected_input = select_input_device(config_path)
-
     parser = argparse.ArgumentParser(description="Virgil Voice Assistant")
     parser.add_argument("-d", "--duration", type=int, help="Recording duration in seconds")
     parser.add_argument("-l", "--log", action="store_true", help="Enable logging to file")
+    parser.add_argument("--audio-select", action="store_true", help="Force audio selection screen at startup")
+    # todo: add a help screen
+    # todo: bain on unrecognized arg
 
     args = parser.parse_args()
     config = load_config(args)
+
+    force_audio_select = args.audio_select if hasattr(args, "audio_select") else False
+    config["audio_input_name"] = select_input_device(config["config_path"], force_audio_select)
+    config["audio_input"] = get_device_index_by_name(config["audio_input_name"])
 
     play_sound( "assets/virgil_startup.wav" )
 
     init_logging(config)
 
     # ...
-    if not check_microphone_activity(config.get("audio_device")):
+    if not check_microphone_activity(config.get("audio_input")):
         Say("Microphone not detected or too quiet. Please check your setup.")
         exit(1)
 

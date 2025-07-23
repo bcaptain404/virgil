@@ -6,7 +6,13 @@ import numpy as np
 import json
 import os
 
-def select_input_device(config_path):
+def get_device_index_by_name(name):
+    for idx, dev in enumerate(sd.query_devices()):
+        if name.lower() in dev['name'].lower():
+            return idx
+    return None
+
+def select_input_device(config_path, force_select=False):
     log(f"[{time.time()}] 🎙 Checking available input devices...")
     devices = sd.query_devices()
     input_devices = [d for d in devices if d['max_input_channels'] > 0]
@@ -18,11 +24,14 @@ def select_input_device(config_path):
     # Load config
     with open(config_path, 'r') as f:
         config = json.load(f)
+        selected = None
 
-    requested_name = config.get("audio_input_name", "").strip()
-    selected = None
+        requested_name = ""
+        if force_select:
+            log(f"[{time.time()}] 🔁 Forcing audio device selection.")
+        else:
+            requested_name = config.get("audio_input_name", "").strip()
 
-    if requested_name:
         log(f"[{time.time()}] 🔍 Config specified input: '{requested_name}'")
         for dev in input_devices:
             if requested_name.lower() in dev['name'].lower():
@@ -39,22 +48,32 @@ def select_input_device(config_path):
         else:
             log(f"[{time.time()}] 🧭 Multiple input devices detected:")
             for idx, dev in enumerate(input_devices):
-                log(f"   [{idx}] {dev['name']}")
+                dev_name = dev['name']
+                host_api = dev.get('hostapi', 'N/A')
+                max_channels = dev['max_input_channels']
+                log(f"   [{idx}] {dev_name} (Channels: {max_channels})")
+
+            print("\nAvailable Microphones:")
+            for idx, dev in enumerate(input_devices):
+                print(f"[{idx}] {dev['name']} - {dev['max_input_channels']} channel(s)")
+
             while True:
                 try:
-                    choice = int(input("Select input device by number: "))
+                    choice = int(input("Select mic input by number: "))
                     if 0 <= choice < len(input_devices):
                         selected = input_devices[choice]['name']
                         log(f"[{time.time()}] 🧠 User selected: {selected}")
                         break
+                    else:
+                        print("Out of range. Try again.")
                 except Exception:
                     print("Invalid input. Try again.")
 
-        # Update config with selected device name
-        config["audio_input_name"] = selected
+        log(f"[{time.time()}] 🎤 Selected input device: {selected}")
+        log(f"[{time.time()}] 💾 Updating config with selected mic device.")
+        config["audio_input_name"] = selected # Update config with selected device name
         with open(config_path, 'w') as f:
             json.dump(config, f, indent=2)
-        log(f"[{time.time()}] 💾 Updated config with selected mic device.")
 
     return selected
 
