@@ -12,70 +12,34 @@ def get_device_index_by_name(name):
             return idx
     return None
 
-def select_input_device(config_path, force_select=False):
-    log(f"[{time.time()}] 🎙 Checking available input devices...")
-    devices = sd.query_devices()
-    input_devices = [d for d in devices if d['max_input_channels'] > 0]
+def select_input_device(config, override=False):
+    input_devices = sd.query_devices()
+    input_list = [d for d in input_devices if d["max_input_channels"] > 0]
 
-    if not input_devices:
-        log(f"[{time.time()}] ❌ No microphone input devices found.")
+    log(f"[{time.time()}] 🎙 Found {len(input_list)} input devices.")
+
+    if not input_list:
+        log(f"[{time.time()}] ❌ No input devices found. Exiting.")
         exit(1)
 
-    # Load config
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-        selected = None
+    if override or "audio_input_name" not in config or not config["audio_input_name"]:
+        log(f"[{time.time()}] 🔧 Forcing device selection...")
+        for i, device in enumerate(input_list):
+            log(f"{i}: {device['name']}")
 
-        requested_name = ""
-        if force_select:
-            log(f"[{time.time()}] 🔁 Forcing audio device selection.")
-        else:
-            requested_name = config.get("audio_input_name", "").strip()
+        selection = input(f"Select input device [0-{len(input_list)-1}]: ")
+        index = int(selection)
+        device_name = input_list[index]["name"]
+        config["audio_input_name"] = device_name
 
-        log(f"[{time.time()}] 🔍 Config specified input: '{requested_name}'")
-        for dev in input_devices:
-            if requested_name.lower() in dev['name'].lower():
-                selected = dev['name']
-                log(f"[{time.time()}] ✅ Found matching input: {selected}")
-                break
-        if not selected:
-            log(f"[{time.time()}] ⚠️ Config input '{requested_name}' not found among active devices.")
-
-    if not selected:
-        if len(input_devices) == 1:
-            selected = input_devices[0]['name']
-            log(f"[{time.time()}] 🎯 Only one input device found. Using: {selected}")
-        else:
-            log(f"[{time.time()}] 🧭 Multiple input devices detected:")
-            for idx, dev in enumerate(input_devices):
-                dev_name = dev['name']
-                host_api = dev.get('hostapi', 'N/A')
-                max_channels = dev['max_input_channels']
-                log(f"   [{idx}] {dev_name} (Channels: {max_channels})")
-
-            print("\nAvailable Microphones:")
-            for idx, dev in enumerate(input_devices):
-                print(f"[{idx}] {dev['name']} - {dev['max_input_channels']} channel(s)")
-
-            while True:
-                try:
-                    choice = int(input("Select mic input by number: "))
-                    if 0 <= choice < len(input_devices):
-                        selected = input_devices[choice]['name']
-                        log(f"[{time.time()}] 🧠 User selected: {selected}")
-                        break
-                    else:
-                        print("Out of range. Try again.")
-                except Exception:
-                    print("Invalid input. Try again.")
-
-        log(f"[{time.time()}] 🎤 Selected input device: {selected}")
-        log(f"[{time.time()}] 💾 Updating config with selected mic device.")
-        config["audio_input_name"] = selected # Update config with selected device name
-        with open(config_path, 'w') as f:
+        with open(config["config_path"], "w") as f:
             json.dump(config, f, indent=2)
 
-    return selected
+        log(f"[{time.time()}] ✅ Saved selected input device: {device_name}")
+
+    config["audio_input"] = get_device_index_by_name(config["audio_input_name"])
+    log(f"[{time.time()}] ✅ Using configured input device: {config['audio_input_name']} at device number {config['audio_input']}")
+    return config["audio_input_name"], config["audio_input"]
 
 def check_microphone_activity(device=None, duration=2.0, threshold=0.01):
     """
