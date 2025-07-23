@@ -7,3 +7,5 @@ assets/virgil.ppn*
 virgil_manifest.txt
 __pycache__
 *.wav
+virgil-env-310
+*.bak

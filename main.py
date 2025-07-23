@@ -4,7 +4,7 @@ import argparse
 import subprocess
 from config import load_config
 from logger import init_logging, log
-from recorder import record_audio
+from recorder import record_audio, check_microphone_activity
 from speaker import init_tts
 from transcriber import start_worker, enqueue_transcription, Say
 from hotword import init_hotword, register_callback
@@ -40,10 +40,17 @@ if __name__ == "__main__":
     config = load_config(args)
 
     init_logging(config)
-    init_tts(config)
-    start_worker(config)
+
+    # ...
+    if not check_microphone_activity(config.get("audio_device")):
+        Say("Microphone not detected or too quiet. Please check your setup.")
+        exit(1)
+
     register_callback(handle_wake)
     init_hotword(config)
+
+    init_tts(config)
+    start_worker(config)
 
     log(f"[{time.time()}] 🧠 Virgil Voice Assistant is live. Say the wake word...")
     Say("Virgil ready.")

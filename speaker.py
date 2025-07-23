@@ -2,8 +2,18 @@ import time
 from TTS.api import TTS
 import subprocess
 from logger import log
-from threading import Thread
 import torch
+import re
+from subprocess import Popen
+from threading import Event
+import os
+
+suppress_wake = Event()
+tts_proc = None
+WAKE_WORD = "Virgil"
+
+def sanitize_output(text):
+    return re.sub(rf"\b{WAKE_WORD}\b", "I", text, flags=re.IGNORECASE)
 
 _tts = None
 
@@ -20,24 +30,45 @@ def init_tts(config):
         log(f"[{time.time()}] 🔍 Torch backend: {torch.backends.mkldnn.enabled}")
 
 def speak(text, config):
-    log(f"[{time.time()}] 🗣 Sending to external TTS subprocess: {text}")
-    subprocess.run([
-        "python3", "speak_once.py", text
-    ])
-    #thread = Thread(target=_speak_sync, args=(text, config))
-    #thread.start()
+    global tts_proc, _tts
 
-def _speak_sync(text, config):
-    global _tts
+    text = sanitize_output(text)
+
+    if not text.strip().endswith((".", "!", "?")):
+        text += "."
+
+    suppress_wake.set()
+    log(f"[{time.time()}] 🗣️ Speaking: {text}")
+
     output_path = config["audio_output"]
-    log(f"[{time.time()}] 🧠 TTS object: {id(_tts)}")
-    log(f"[{time.time()}] 🗣️ Virgil: {text}")
+
     try:
-        log(f"[{time.time()}] 🗣️ tts_to_file: begin")
+        start = time.time()
         _tts.tts_to_file(text=text, file_path=output_path)
-        log(f"[{time.time()}] 🗣️ tts_to_file: done")
-        log(f"[{time.time()}] 🗣️ subprocess: begin")
-        subprocess.run(["aplay", output_path])
-        log(f"[{time.time()}] 🗣️ subprocess: done")
+        log(f"[{time.time()}] 🧾 TTS generation took {time.time() - start:.2f}s")
+
+        # make sure file is finished being written
+        prev_size = -1
+        while True:
+            size = os.path.getsize(output_path)
+            if size == prev_size:
+                break
+            prev_size = size
+            time.sleep(0.05)
+        log(f"[{time.time()}] 🧾 TTS generation file written.")
     except Exception as e:
-        log(f"[{time.time()}] ❌ TTS failed: {e}")
+        log(f"[{time.time()}] ❌ TTS synthesis failed: {e}")
+        suppress_wake.clear()
+        return
+
+    try:
+        tts_proc = Popen([
+            "ffplay", "-nodisp", "-autoexit", output_path
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        tts_proc.wait()
+    except Exception as e:
+        log(f"[{time.time()}] ❌ Audio playback failed: {e}")
+    finally:
+        tts_proc = None
+        suppress_wake.clear()
