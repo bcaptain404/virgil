@@ -1,8 +1,20 @@
 {
   "default_duration": 3,
-  "wake_words": ["virgil"],
   "transcript_log": "virgil.log",
+  "tts_model": "tts_models/en/ljspeech/tacotron2-DDC",
+  "whisper_dir": "/home/user/virgil/whisper.cpp",
+  "audio_input": "input.wav",
+  "audio_output": "out.wav",
+  "wake_word_model": "/home/user/virgil/assets/virgil.ppn",
+  "porcupine_access_key": "3ffP5FnqfKpnj2FJ9+n79a//he/MEjYAwJ2gCxliudwmhFq72evh5A==",
+  "config_path": "/home/user/proj/virgil/config.json",
+  "wake_words": [
+    "virgil"
+  ],
   "keyword_path": "assets/virgil.ppn",
-  "porcupine_access_key": "3ffP5FnqfKpnj2FJ9+n79a//he/MEjYAwJ2gCxliudwmhFq72evh5A=="
+  "audio_input_name": "/dev/dsp",
+  "log_enabled": true,
+  "whisper_bin": "/home/user/virgil/whisper.cpp/build/bin/whisper-cli",
+  "whisper_model": "/home/user/virgil/whisper.cpp/models/ggml-base.en.bin",
+  "transcription_file": "/home/user/virgil/whisper.cpp/transcription.txt"
 }
-

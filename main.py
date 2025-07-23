@@ -1,6 +1,7 @@
 import os
 import time
 import argparse
+import sys
 import subprocess
 from config import load_config
 from logger import init_logging, log
@@ -34,16 +35,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Virgil Voice Assistant")
     parser.add_argument("-d", "--duration", type=int, help="Recording duration in seconds")
     parser.add_argument("-l", "--log", action="store_true", help="Enable logging to file")
-    parser.add_argument("--audio-select", action="store_true", help="Force audio selection screen at startup") # todo: rename to mic-select
+    parser.add_argument("--mic-select", action="store_true", help="Force audio input selection screen at startup") # todo: rename to mic-select
     # todo: add a help screen
-    # todo: bain on unrecognized arg
+    # todo: bail on unrecognized arg
     # todo: --config to load a specific config file
 
     args = parser.parse_args()
     config = load_config(args)
 
-    force_audio_select = args.audio_select if hasattr(args, "audio_select") else False
-    config["audio_input_name"], config["audio_input"] = select_input_device(config, force_audio_select)
+    force_mic_select = args.mic_select if hasattr(args, "mic_select") else False
+    config["audio_input_name"], config["audio_input"] = select_input_device(config, force_mic_select)
     sd.default.device = (config["audio_input"], None)
 
     play_sound( "assets/virgil_startup.wav" )

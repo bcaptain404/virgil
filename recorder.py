@@ -25,7 +25,10 @@ def select_input_device(config, override=False):
     if override or "audio_input_name" not in config or not config["audio_input_name"]:
         log(f"[{time.time()}] 🔧 Forcing device selection...")
         for i, device in enumerate(input_list):
-            log(f"{i}: {device['name']}")
+            foo = f"{i}: {device['name']} | ID: {device['index']} | Host API: {sd.query_hostapis()[device['hostapi']]['name']} | Channels: {device['max_input_channels']}"
+            log( foo )
+            print( foo )
+
 
         selection = input(f"Select input device [0-{len(input_list)-1}]: ")
         index = int(selection)
