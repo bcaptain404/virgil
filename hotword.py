@@ -24,7 +24,7 @@ def init_hotword(config):
         kpath=keyword_path
     else:
         log(f"[{time.time()}] ⚠️ Using default wake word: 'porcupine'")
-        keywords=["porcupine"],
+        keywords=["porcupine"]
 
     log(f"[{time.time()}] 🎙️ Using input_device_index: {config.get('input_device_index')}")
     DEFAULT_WAKE_SENS=0.6
@@ -32,7 +32,7 @@ def init_hotword(config):
         access_key=access_key,
         keyword_paths=[kpath],
         keywords=None,
-        sensitivities=config.get("wake_sensitivity", DEFAULT_WAKE_SENS)
+        sensitivities=[config.get("wake_sensitivity", DEFAULT_WAKE_SENS)]
     )
 
     device = config.get("audio_input") or None  # None falls back to default
@@ -43,7 +43,7 @@ def init_hotword(config):
         channels=1,
         samplerate=porcupine.sample_rate,
         blocksize=porcupine.frame_length,
-        input_device_index=config.get("input_device_index", 0),
+        input_device_index=config.get("audio_input", 0),
         dtype="int16",
         callback=audio_callback
     )
