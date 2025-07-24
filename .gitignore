@@ -9,3 +9,4 @@ __pycache__
 *.wav
 virgil-env-310
 *.bak
+*.swp

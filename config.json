@@ -12,7 +12,7 @@
     "virgil"
   ],
   "keyword_path": "assets/virgil.ppn",
-  "audio_input_name": "/dev/dsp",
+  "audio_input_name": "HD Pro Webcam C920: USB Audio (hw:1,0)",
   "log_enabled": true,
   "whisper_bin": "/home/user/virgil/whisper.cpp/build/bin/whisper-cli",
   "whisper_model": "/home/user/virgil/whisper.cpp/models/ggml-base.en.bin",
