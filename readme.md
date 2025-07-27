@@ -1,6 +1,6 @@
 # Virgil: Offline Voice Assistant
 
-This is not ready for general use yet. The build scrits are a work-in-progress as well.
+This is not ready for general use yet. The build scripts are a work in progress.
 
 ## 🧱 Project Structure
 - Modular Python architecture
@@ -8,46 +8,61 @@ This is not ready for general use yet. The build scrits are a work-in-progress a
 - Wake word detection ("Virgil") via Porcupine
 
 ## 📦 Dependencies
-Below This is a VERY rough build procedure, you may have to tailor it to your setup, OS, or distro.
-Seriously, it needs a lot of work... but ... we'll work on it as the project progresses.
-```
-# if on Ubuntu:
-sudo apt install -y alsa-utils build-essential cmake curl ffmpeg libbz2-dev libffi-dev\
-    libgdbm-dev liblzma-dev libncurses5-dev libnss3-dev libopenblas-dev libreadline-dev\
-    libsoundio-dev libsqlite3-dev libssl-dev portaudio19-dev python3-dev sox tk-dev\
+
+> ⚠️ This section is a work-in-progress. It works on Ubuntu 24.10+, but you'll need to adjust if you're using something cursed or ancient.
+
+### 🧱 System Packages
+```bash
+sudo apt install -y alsa-utils build-essential cmake curl ffmpeg libbz2-dev libffi-dev \
+    libgdbm-dev liblzma-dev libncurses5-dev libnss3-dev libopenblas-dev libreadline-dev \
+    libsoundio-dev libsqlite3-dev libssl-dev portaudio19-dev python3-dev sox tk-dev \
     uuid-dev wget zlib1g-dev
+```
 
-# NOTE: python 3.12 is required (not newer [yet])
-# NOTE: Running in a venv is recommended, but that is beyond the scope of this document.
-
-# if on Ubuntu 24.10:
-apt install python3
-
-# If on Ubuntu 25.04 (run `cat /etc/issue` to find out), the packaged python3 is too new. However, you can install python 3.12 as an alternative to whatever version is already installed:
+### 🐍 Python 3.12 Installation (if your distro ships Python 3.13+)
+```bash
 cd /usr/src
-sudo wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz && \
-    sudo tar -xf Python-3.12.3.tgz && \
-    cd Python-3.12.3 && \
-    sudo ./configure --enable-optimizations --with-ensurepip=install && \
-    sudo make -j$(nproc) && sudo make altinstall
+sudo wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz
+sudo tar -xf Python-3.12.3.tgz
+cd Python-3.12.3
+sudo ./configure --enable-optimizations --with-ensurepip=install
+sudo make -j$(nproc)
+sudo make altinstall
+```
+
+### 🔀 Enable Python 3.12 via update-alternatives:
+```bash
 sudo update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.12 1
-sudo update-alternatives --config python3
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 2 # select python 3.12
-python3 --version # confirm you're running python 3.12
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 2
+sudo update-alternatives --config python3   # Choose Python 3.12 from the menu
+python3 --version                           # Should now show 3.12.x
+```
 
-# Here's the rough idea on how to create a venv:
-python3 -m venv ~/virgil-env
-source ~/virgil-env/bin/activate
+---
 
-# install pip
-python3 -m ensurepip --upgrade
+### 🦪 Setup Global Virgil Venv
+We recommend a global-ish venv to avoid fighting Ubuntu's Python packaging. For example:
+```bash
+python3 -m venv ~/.local/fuck-ubuntu
+source ~/.local/fuck-ubuntu/bin/activate
+```
 
-# Install Python dependencies:
-/usr/local/bin/python3.12 -m pip install coqui-tts coqui-tts python-dotenv pvporcupine sounddevice
-/usr/local/bin/python3.12 -m pip install ffmpeg-python # development dependencied (if wanted)
+You can add this to your `.bashrc`:
+```bash
+# Activate Virgil env automatically
+source ~/.local/fuck-ubuntu/bin/activate
+```
 
-# Bonus: If you're still confused, look into pipx for installing python3 dependencies globally. That's sometimes an option.
+---
 
+### 📦 Python Package Installs (from within the venv):
+
+```bash
+# Required
+pip install coqui-tts python-dotenv pvporcupine sounddevice
+
+# Optional (for audio post-processing)
+pip install ffmpeg-python
 ```
 
 ## 🗂 Config Files

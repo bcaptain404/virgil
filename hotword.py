@@ -38,6 +38,9 @@ def init_hotword(config):
             sensitivities=[wake_sensitivity]
         )
 
+    info = pyaudio_instance.get_device_info_by_index(input_device_index)
+    log(f"🔍 Using device: {info['name']} @ {info['defaultSampleRate']} Hz")
+
     stream = sd.InputStream(
         device=input_device,
         channels=1,
@@ -49,14 +52,21 @@ def init_hotword(config):
 
     log(f"[{time.time()}] 🎤 Using input device: {input_device}")
     stream.start()
+    log(f"🎧 Starting mic stream with index={input_device_index}, sample_rate={sample_rate}, channels=1, format=paInt16")
     log(f"[{time.time()}] 👂 Hotword detection initialized.")
 
 def audio_callback(indata, frames, time_info, status):
-    pcm = struct.unpack_from("%dh" % len(indata), indata)
-    keyword_index = porcupine.process(pcm)
-    if keyword_index >= 0:
-        log(f"[{time.time()}] 🔊 Wake word detected!")
-        on_wake()
+    log(f"[{time.time()}] 🎧 Listening...")
+    pcm = stream.read(porcupine.frame_length, exception_on_overflow=False)
+    pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
+    if suppress_wake.is_set():
+        log(f"[{time.time()}] ⏸ Wake suppressed.")
+    else:
+        result = porcupine.process(pcm)
+        log(f"[{time.time()}] 👂 Wake result: {result}")
+        if result >= 0:
+            log(f"[{time.time()}] 🔊 Wake word detected!")
+            on_wake()
 
 def on_wake():
     if wake_callback:
