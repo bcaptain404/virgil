@@ -2,6 +2,10 @@
 
 This is not ready for general use yet. The build scripts are a work in progress.
 
+## Roadmap
+- Get basic script execution running (eg, "Virgil, kill the runaway process", "Virgil, open Firefox", etc)
+- Connect an AI model to offload more complicated tasks.
+
 ## 🧱 Project Structure
 - Modular Python architecture
 - Fully offline speech-to-text + text-to-speech loop
