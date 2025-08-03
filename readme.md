@@ -2,6 +2,8 @@
 
 This is not ready for general use yet. The build scripts are a work in progress.
 
+NOTE: AI is being used to develop boiler-plate code and most of the readme.
+
 ## Roadmap
 - Get basic script execution running (eg, "Virgil, kill the runaway process", "Virgil, open Firefox", etc)
 - Connect an AI model to offload more complicated tasks.
